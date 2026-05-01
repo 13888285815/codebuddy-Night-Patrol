@@ -2,6 +2,8 @@ import {
   AudioWaveform,
   BadgeCent,
   BookOpen,
+  ChevronLeft,
+  ChevronRight,
   Home,
   Info,
   RotateCcw,
@@ -47,6 +49,42 @@ import type { CardInstance, Difficulty, GameState, NodeType, Screen } from "./ga
 import { CombatStage } from "./phaser/CombatStage";
 
 const routeNames = ["县口", "荒村", "井边", "破庙", "林道", "阴市", "山门", "正殿"];
+
+interface ExplainerStep {
+  title: string;
+  content: string;
+  tip?: string;
+}
+
+const EXPLAINER_STEPS: ExplainerStep[] = [
+  {
+    title: "夜巡录是什么？",
+    content: "夜巡录是一款志怪题材卡牌构筑 roguelike 游戏。每次开局，你都会从破庙出发，一路战斗、探索、休整，最终击败山君。",
+  },
+  {
+    title: "战斗基础",
+    content: "每回合你有限定的能量打出卡牌。攻击牌拖向妖物施放，技能和法门牌拖向自己施放。合理分配资源是活过每一场战斗的关键。",
+    tip: "注意观察妖物的意图，它会告诉你它下回合要做什么。",
+  },
+  {
+    title: "牌组构建",
+    content: "战斗胜利后会获得新卡牌，选择加入手牌来强化你的牌组。但牌组并非越厚越好——删掉无用的牌，让核心牌更容易抽到。",
+    tip: "开局建议优先拿过牌和防御牌，保证能活到后期。",
+  },
+  {
+    title: "遗物与香火",
+    content: "遗物是强力的被动效果，每个遗物都有独特的能力。香火是一种资源，某些卡牌和遗物会消耗或产出香火。",
+  },
+  {
+    title: "路线选择",
+    content: "每个节点只通向几条后路。打精英找遗物，进阴市买牌，回残灯休整——提前规划路线才能走得更远。",
+    tip: "注意地图上的颜色标识，绿色是休整点，红色是精英或BOSS。",
+  },
+  {
+    title: "难度提示",
+    content: "演示难度适合新手和内容体验，标准难度提供完整挑战，劫难难度则考验极限构筑能力。",
+  },
+];
 const hudBloodUrl = new URL("../assets/vendor/shushan/icon-blood-orb.png", import.meta.url).href;
 const baguaIconUrl = new URL("../assets/vendor/shushan/icon-bagua-gold.png", import.meta.url).href;
 const talismanIconUrl = new URL("../assets/vendor/shushan/icon-talisman-paper.png", import.meta.url).href;
@@ -103,6 +141,7 @@ export function App() {
   const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty>("normal");
   const [loadingDifficulty, setLoadingDifficulty] = useState<Difficulty | null>(null);
   const [aboutReturnScreen, setAboutReturnScreen] = useState<Screen>("title");
+  const [explainerStep, setExplainerStep] = useState(0);
   const audioRef = useRef<RitualAudio | null>(null);
   const loadingTimerRef = useRef<number | null>(null);
 
@@ -151,6 +190,38 @@ export function App() {
     setGame((prev) => ({ ...cloneState(prev), screen: aboutReturnScreen || "title" }));
   };
 
+  const openExplainer = () => {
+    audio().sfx("click");
+    if (loadingTimerRef.current) window.clearTimeout(loadingTimerRef.current);
+    setLoadingDifficulty(null);
+    setExplainerStep(0);
+    setGame((prev) => {
+      if (prev.screen !== "explainer") setAboutReturnScreen(prev.screen);
+      return { ...cloneState(prev), screen: "explainer" };
+    });
+  };
+
+  const closeExplainer = () => {
+    audio().sfx("click");
+    setGame((prev) => ({ ...cloneState(prev), screen: aboutReturnScreen || "title" }));
+  };
+
+  const nextExplainerStep = () => {
+    audio().sfx("click");
+    if (explainerStep < EXPLAINER_STEPS.length - 1) {
+      setExplainerStep((s) => s + 1);
+    } else {
+      closeExplainer();
+    }
+  };
+
+  const prevExplainerStep = () => {
+    audio().sfx("click");
+    if (explainerStep > 0) {
+      setExplainerStep((s) => s - 1);
+    }
+  };
+
   const beginRun = (difficulty: Difficulty) => {
     audio().sfx("click");
     setSelectedDifficulty(difficulty);
@@ -194,9 +265,19 @@ export function App() {
             selectedDifficulty={selectedDifficulty}
             onDifficulty={setSelectedDifficulty}
             onStart={beginRun}
+            onExplainer={openExplainer}
           />
         )}
         {!loadingDifficulty && game.screen === "about" && <AboutScreen onBack={closeAbout} onHome={returnHome} />}
+        {!loadingDifficulty && game.screen === "explainer" && (
+          <ExplainerScreen
+            step={explainerStep}
+            total={EXPLAINER_STEPS.length}
+            onNext={nextExplainerStep}
+            onPrev={prevExplainerStep}
+            onClose={closeExplainer}
+          />
+        )}
         {player && game.screen === "map" && <MapScreen game={game} onChoose={(nodeId) => transact((draft) => chooseNode(draft, nodeId))} />}
         {player && game.screen === "combat" && game.combat && (
           <CombatScreen
@@ -350,10 +431,12 @@ function TitleScreen({
   selectedDifficulty,
   onDifficulty,
   onStart,
+  onExplainer,
 }: {
   selectedDifficulty: Difficulty;
   onDifficulty: (difficulty: Difficulty) => void;
   onStart: (difficulty: Difficulty) => void;
+  onExplainer: () => void;
 }) {
   return (
     <section className="title-view">
@@ -386,6 +469,9 @@ function TitleScreen({
         <div className="title-actions">
           <button className="primary-command" type="button" onClick={() => onStart(selectedDifficulty)}>
             <Swords /> 开始夜巡
+          </button>
+          <button className="secondary-command" type="button" onClick={onExplainer}>
+            <BookOpen /> 新手指南
           </button>
         </div>
       </div>
@@ -1120,6 +1206,64 @@ function EndScreen({ title, body, onStart }: { title: string; body: string; onSt
             <Swords /> 再巡一夜
           </button>
         </div>
+      </div>
+    </section>
+  );
+}
+
+function ExplainerScreen({
+  step,
+  total,
+  onNext,
+  onPrev,
+  onClose,
+}: {
+  step: number;
+  total: number;
+  onNext: () => void;
+  onPrev: () => void;
+  onClose: () => void;
+}) {
+  const current = EXPLAINER_STEPS[step];
+  const progress = ((step + 1) / total) * 100;
+  return (
+    <section className="explainer-view">
+      <video className="scene-loop-video title-loop-video" src={sceneLoopVideoUrl} autoPlay loop muted playsInline />
+      <div className="explainer-panel">
+        <div className="explainer-header">
+          <p className="eyebrow">新手指南</p>
+          <span className="explainer-progress-label">
+            {step + 1} / {total}
+          </span>
+        </div>
+        <div className="explainer-progress-bar">
+          <div className="explainer-progress-fill" style={{ width: `${progress}%` }} />
+        </div>
+        <h2>{current.title}</h2>
+        <p className="explainer-content">{current.content}</p>
+        {current.tip && <div className="explainer-tip"><strong>小贴士：</strong>{current.tip}</div>}
+        <div className="explainer-nav">
+          <button
+            className="secondary-command"
+            type="button"
+            onClick={onPrev}
+            disabled={step === 0}
+          >
+            <ChevronLeft /> 上一步
+          </button>
+          {step === total - 1 ? (
+            <button className="primary-command" type="button" onClick={onNext}>
+              <SkipForward /> 开始游戏
+            </button>
+          ) : (
+            <button className="primary-command" type="button" onClick={onNext}>
+              下一步 <ChevronRight />
+            </button>
+          )}
+        </div>
+        <button className="explainer-close" type="button" onClick={onClose}>
+          跳过教程
+        </button>
       </div>
     </section>
   );

@@ -558,6 +558,131 @@ button:focus-visible {
   border-left: 3px solid rgba(215, 175, 93, 0.62);
 }
 
+.explainer-view {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  padding: 118px clamp(22px, 6vw, 88px) 52px;
+  background:
+    linear-gradient(90deg, rgba(5, 8, 8, 0.98), rgba(5, 8, 8, 0.7) 54%, rgba(5, 8, 8, 0.36)),
+    url("../assets/generated/backgrounds/night-temple-battle.png") center / cover;
+}
+
+.explainer-view::after {
+  content: "";
+  position: fixed;
+  z-index: 1;
+  inset: 76px 0 0;
+  background:
+    radial-gradient(circle at 62% 26%, rgba(130, 213, 199, 0.08), transparent 34%),
+    linear-gradient(180deg, rgba(5, 8, 8, 0.66), rgba(5, 8, 8, 0.22) 34%, rgba(5, 8, 8, 0.82));
+  pointer-events: none;
+}
+
+.explainer-panel {
+  position: relative;
+  z-index: 2;
+  width: min(820px, 100%);
+  display: grid;
+  gap: 18px;
+  padding: 28px 32px;
+  border: 1px solid rgba(216, 181, 105, 0.24);
+  border-radius: 12px;
+  background:
+    linear-gradient(180deg, rgba(15, 28, 27, 0.94), rgba(5, 9, 9, 0.9)),
+    rgba(5, 8, 8, 0.86);
+  box-shadow: 0 22px 48px rgba(0, 0, 0, 0.38);
+}
+
+.explainer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.explainer-progress-label {
+  color: var(--jade-soft);
+  font-size: 0.9rem;
+  font-weight: 900;
+}
+
+.explainer-progress-bar {
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(255, 239, 207, 0.12);
+  overflow: hidden;
+}
+
+.explainer-progress-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--jade), var(--jade-soft));
+  transition: width 280ms ease;
+}
+
+.explainer-panel h2 {
+  margin: 0;
+  color: #ffe2ad;
+  font-size: clamp(1.8rem, 4vw, 3.2rem);
+  line-height: 1.1;
+}
+
+.explainer-content {
+  color: rgba(255, 239, 207, 0.86);
+  font-size: 1.08rem;
+  line-height: 1.8;
+  margin: 0;
+}
+
+.explainer-tip {
+  padding: 14px 16px;
+  border-radius: 8px;
+  border-left: 3px solid var(--jade);
+  background: rgba(68, 196, 181, 0.08);
+  color: rgba(255, 239, 207, 0.82);
+  font-size: 0.95rem;
+  line-height: 1.65;
+}
+
+.explainer-tip strong {
+  color: var(--jade-soft);
+}
+
+.explainer-nav {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.explainer-nav .secondary-command {
+  min-width: 120px;
+  margin-top: 0;
+}
+
+.explainer-nav .secondary-command:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.explainer-close {
+  align-self: flex-end;
+  margin-top: 8px;
+  padding: 8px 16px;
+  border: 1px solid rgba(216, 181, 105, 0.2);
+  border-radius: 6px;
+  background: transparent;
+  color: rgba(255, 239, 207, 0.54);
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: color 140ms ease, border-color 140ms ease;
+}
+
+.explainer-close:hover {
+  color: rgba(255, 239, 207, 0.82);
+  border-color: rgba(216, 181, 105, 0.42);
+}
+
 .route-view,
 .choice-view {
   height: 100%;
