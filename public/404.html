@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>夜巡录：荒庙篇</title>
+    <link rel="icon" type="image/png" href="./favicon.png" />
+    <script>
+      // 解决 GitHub Pages SPA 路由问题
+      // 此代码来自 https://github.com/rafgraph/spa-github-pages
+      // 在 GitHub Pages 上使用 React Router 等 SPA 路由时需要
+      const pathSegmentsToKeep = 1;
+      const l = window.location;
+      l.replace(
+        l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '') +
+        l.pathname.split('/').slice(0, 1 + pathSegmentsToKeep).join('/') + '/?/' +
+        l.pathname.slice(1).split('/').slice(pathSegmentsToKeep).join('/').replace(/&/g, '~and~') +
+        (l.search ? '&' + l.search.slice(1).replace(/&/g, '~and~') : '') +
+        l.hash
+      );
+    </script>
+  </head>
+  <body>
+    <div id="app"></div>
+  </body>
+</html>
