@@ -799,6 +799,8 @@ function createCinematicState(
       : combatType === "elite"
         ? "破庙恶客散入残香，遗物在灰烬里发亮。"
         : "符火将尽，夜路重新露出一截。";
+  const videoUrl = `/assets/generated/cinematics/victory-${slug}.mp4`;
+  const posterUrl = `/assets/generated/cinematics/victory-${slug}-poster.png`;
   return {
     enemyId: enemy.id,
     enemyName: enemy.name,
@@ -806,8 +808,8 @@ function createCinematicState(
     combatType,
     title,
     subtitle,
-    videoUrl: `/assets/generated/cinematics/victory-${slug}.mp4`,
-    posterUrl: `/assets/generated/cinematics/victory-${slug}-poster.png`,
+    videoUrl,
+    posterUrl,
     nextScreen,
     rewardSummary,
   };

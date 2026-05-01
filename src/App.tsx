@@ -91,6 +91,7 @@ const cinematicPosterUrls: Record<string, string> = {
 const cinematicVideoUrls: Record<string, string> = {
   lantern: new URL("../assets/generated/cinematics/victory-lantern.mp4", import.meta.url).href,
   waterghost: new URL("../assets/generated/cinematics/victory-waterghost.mp4", import.meta.url).href,
+  templecorpse: new URL("../assets/generated/cinematics/victory-templecorpse-poster.png", import.meta.url).href,
   macaque: new URL("../assets/generated/cinematics/victory-macaque.mp4", import.meta.url).href,
   warlock: new URL("../assets/generated/cinematics/victory-warlock.mp4", import.meta.url).href,
   foxshade: new URL("../assets/generated/cinematics/victory-foxshade.mp4", import.meta.url).href,
