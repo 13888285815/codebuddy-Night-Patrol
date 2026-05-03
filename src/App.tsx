@@ -49,7 +49,6 @@ import {
 import { RitualAudio } from "./game/audio";
 import type { CardInstance, Difficulty, GameState, NodeType, Screen } from "./game/types";
 import { CombatStage } from "./phaser/CombatStage";
-import RobotArena from "./RobotArena";
 
 const routeNames = ["县口", "荒村", "井边", "破庙", "林道", "阴市", "山门", "正殿"];
 
@@ -253,7 +252,6 @@ export function App() {
   const visibleScreen = loadingDifficulty ? "loading" : game.screen;
 
   if (currentGame === 'robot') {
-    return <RobotArena />;
   }
   
   if (currentGame === 'selector') {
