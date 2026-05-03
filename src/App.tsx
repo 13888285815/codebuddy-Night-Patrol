@@ -4,6 +4,7 @@ import {
   BookOpen,
   ChevronLeft,
   ChevronRight,
+  Gamepad2,
   Home,
   Info,
   RotateCcw,
@@ -17,7 +18,7 @@ import {
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { CSSProperties, PointerEvent as ReactPointerEvent, ReactNode } from "react";
-import { NODE_DEFS } from "./game/content";
+import { CHAPTER_CONFIG, NODE_DEFS } from "./game/content";
 import {
   buyShopCard,
   buyShopRelic,
@@ -40,6 +41,7 @@ import {
   removeCard,
   resolveEvent,
   restHeal,
+  startNextChapter,
   startRun,
   takeRewardCard,
   upgradeCard,
@@ -47,6 +49,7 @@ import {
 import { RitualAudio } from "./game/audio";
 import type { CardInstance, Difficulty, GameState, NodeType, Screen } from "./game/types";
 import { CombatStage } from "./phaser/CombatStage";
+import RobotArena from "./RobotArena";
 
 const routeNames = ["县口", "荒村", "井边", "破庙", "林道", "阴市", "山门", "正殿"];
 
@@ -136,6 +139,7 @@ const cinematicVideoUrls: Record<string, string> = {
 };
 
 export function App() {
+  const [currentGame, setCurrentGame] = useState<'selector' | 'card' | 'robot'>('selector');
   const [game, setGame] = useState<GameState>(() => createGameState());
   const [muted, setMuted] = useState(false);
   const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty>("normal");
@@ -248,13 +252,95 @@ export function App() {
 
   const visibleScreen = loadingDifficulty ? "loading" : game.screen;
 
+  if (currentGame === 'robot') {
+    return <RobotArena />;
+  }
+  
+  if (currentGame === 'selector') {
+    return (
+      <div className="game-selector">
+        <div className="selector-content">
+          <h1>选择游戏</h1>
+          <div className="game-cards">
+            <button className="game-card" onClick={() => setCurrentGame('card')}>
+              <Swords size={48} />
+              <h2>夜巡录</h2>
+              <p>志怪卡牌构筑游戏</p>
+            </button>
+            <button className="game-card" onClick={() => setCurrentGame('robot')}>
+              <Gamepad2 size={48} />
+              <h2>机器人角斗场</h2>
+              <p>3D机器人战斗游戏</p>
+            </button>
+          </div>
+        </div>
+        <style>{`
+          .game-selector {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          }
+          
+          .selector-content {
+            text-align: center;
+            padding: 40px;
+          }
+          
+          .selector-content h1 {
+            color: white;
+            font-size: 48px;
+            margin-bottom: 50px;
+            text-shadow: 0 0 20px rgba(78, 205, 196, 0.5);
+          }
+          
+          .game-cards {
+            display: flex;
+            gap: 40px;
+            flex-wrap: wrap;
+            justify-content: center;
+          }
+          
+          .game-card {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(78, 205, 196, 0.3);
+            border-radius: 20px;
+            padding: 50px 40px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: white;
+            min-width: 280px;
+          }
+          
+          .game-card:hover {
+            background: rgba(78, 205, 196, 0.2);
+            border-color: #4ecdc4;
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(78, 205, 196, 0.3);
+          }
+          
+          .game-card h2 {
+            font-size: 28px;
+            margin: 20px 0 10px;
+          }
+          
+          .game-card p {
+            font-size: 16px;
+            color: #aaa;
+          }
+        `}</style>
+      </div>
+    );
+  }
+
   return (
     <div className="app-frame">
       <TopHud
         game={game}
         muted={muted}
         onMute={toggleMute}
-        onHome={returnHome}
+        onHome={() => setCurrentGame('selector')}
         onAbout={openAbout}
         onRestart={() => transact((draft) => startRun(draft, game.difficulty || selectedDifficulty))}
       />
@@ -334,6 +420,7 @@ export function App() {
           />
         )}
         {game.screen === "gameover" && <EndScreen title="夜路尽头" body="雾声合拢，城隍残印沉了下去。可荒庙仍在，下一次夜巡会更懂取舍。" onStart={() => transact(startRun)} />}
+        {game.screen === "chapter" && <ChapterScreen game={game} onContinue={() => transact(startNextChapter)} />}
         {game.screen === "victory" && <EndScreen title="雾散天明" body="山君伏诛，荒庙的门终于被晨光推开。你带回来的不是答案，而是一套在夜里活下来的法门。" onStart={() => transact(startRun)} />}
       </main>
     </div>
@@ -1191,6 +1278,31 @@ function LogRail({ logs }: { logs: string[] }) {
         );
       })}
     </aside>
+  );
+}
+
+function ChapterScreen({ game, onContinue }: { game: GameState; onContinue: () => void }) {
+  const nextChapter = game.chapter + 1;
+  const chapterConfig = CHAPTER_CONFIG[nextChapter as keyof typeof CHAPTER_CONFIG];
+  
+  if (!chapterConfig) {
+    return null;
+  }
+  
+  return (
+    <section className="title-view">
+      <div className="title-copy">
+        <p className="eyebrow">第 {game.chapter} 章 完</p>
+        <h1>{chapterConfig.name}</h1>
+        <p>{chapterConfig.subtitle}</p>
+        <p className="chapter-hint">前路更凶险，法器当慎用。</p>
+        <div className="title-actions">
+          <button className="primary-command" type="button" onClick={onContinue}>
+            <ChevronRight /> 继续夜巡
+          </button>
+        </div>
+      </div>
+    </section>
   );
 }
 

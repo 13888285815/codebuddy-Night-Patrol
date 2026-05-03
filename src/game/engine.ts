@@ -1,6 +1,7 @@
-import { CARD_DEFS, CARD_POOL, ENEMIES, EVENTS, NODE_DEFS, RELICS } from "./content";
+import { CARD_DEFS, CARD_POOL, CHAPTER_CONFIG, ENEMIES, EVENTS, NODE_DEFS, RELICS } from "./content";
 import type {
   CardInstance,
+  Chapter,
   CombatState,
   Difficulty,
   EnemyMove,
@@ -64,6 +65,7 @@ export function createGameState(): GameState {
     difficulty: "normal",
     player: null,
     floor: 0,
+    chapter: 1,
     mapNodes: [],
     availableNodeIds: [],
     currentNodeId: null,
@@ -232,43 +234,28 @@ export function startRun(state: GameState, difficulty: Difficulty = "normal") {
 }
 
 function generateRouteMap(state: GameState): MapNode[] {
-  const rows: Array<Array<{ lane: number; type: NodeType }>> = [
-    [
-      { lane: 1, type: "combat" },
-      { lane: 3, type: "combat" },
-    ],
-    shuffle(state, [
-      { lane: 0, type: "combat" as NodeType },
-      { lane: 2, type: "event" as NodeType },
-      { lane: 4, type: "combat" as NodeType },
-    ]),
-    shuffle(state, [
-      { lane: 0, type: "elite" as NodeType },
-      { lane: 2, type: "event" as NodeType },
-      { lane: 4, type: "shop" as NodeType },
-    ]),
-    shuffle(state, [
-      { lane: 1, type: "rest" as NodeType },
-      { lane: 2, type: "combat" as NodeType },
-      { lane: 3, type: "event" as NodeType },
-    ]),
-    shuffle(state, [
-      { lane: 0, type: "elite" as NodeType },
-      { lane: 2, type: "combat" as NodeType },
-      { lane: 4, type: "event" as NodeType },
-    ]),
-    shuffle(state, [
-      { lane: 0, type: "shop" as NodeType },
-      { lane: 2, type: "rest" as NodeType },
-      { lane: 4, type: "combat" as NodeType },
-    ]),
-    shuffle(state, [
-      { lane: 1, type: "elite" as NodeType },
-      { lane: 2, type: "rest" as NodeType },
-      { lane: 3, type: "event" as NodeType },
-    ]),
-    [{ lane: 2, type: "boss" }],
-  ];
+  const chapterConfig = CHAPTER_CONFIG[state.chapter];
+  const rows: Array<Array<{ lane: number; type: NodeType }>> = [];
+  
+  for (let i = 0; i < chapterConfig.nodeRows; i++) {
+    if (i === 0) {
+      rows.push([{ lane: 1, type: "combat" }, { lane: 3, type: "combat" }]);
+    } else if (i === chapterConfig.nodeRows - 1) {
+      rows.push([{ lane: 2, type: "boss" }]);
+    } else if (i % 3 === 1) {
+      rows.push(shuffle(state, [
+        { lane: 0, type: "elite" as NodeType },
+        { lane: 2, type: "event" as NodeType },
+        { lane: 4, type: "shop" as NodeType },
+      ]));
+    } else {
+      rows.push(shuffle(state, [
+        { lane: 0, type: "combat" as NodeType },
+        { lane: 2, type: "rest" as NodeType },
+        { lane: 4, type: "combat" as NodeType },
+      ]));
+    }
+  }
 
   const nodes: MapNode[] = rows.flatMap((row, rowIndex) =>
     row
@@ -315,11 +302,14 @@ export function chooseNode(state: GameState, nodeId: string) {
 }
 
 function enemyFor(state: GameState, type: "combat" | "elite" | "boss") {
-  if (type === "boss") return "tigerlord";
-  if (type === "elite") return pick(state, ["warlock", "foxshade"]);
-  if (state.floor <= 1) return pick(state, ["lantern", "waterghost"]);
-  if (state.floor <= 3) return pick(state, ["lantern", "waterghost", "templecorpse"]);
-  return pick(state, ["lantern", "waterghost", "templecorpse", "macaque"]);
+  const chapterConfig = CHAPTER_CONFIG[state.chapter];
+  
+  if (type === "boss") return chapterConfig.bossId;
+  if (type === "elite") return pick(state, chapterConfig.eliteEnemies);
+  
+  const enemies = chapterConfig.normalEnemies;
+  if (state.floor <= 1) return pick(state, enemies.slice(0, 2));
+  return pick(state, enemies);
 }
 
 function startCombat(state: GameState, type: "combat" | "elite" | "boss") {
@@ -822,8 +812,41 @@ export function finishCinematic(state: GameState) {
     return;
   }
   state.cinematic = null;
-  state.screen = cinematic.nextScreen;
+  
+  if (cinematic.nextScreen === "victory") {
+    if (state.chapter < 3) {
+      state.screen = "chapter";
+    } else {
+      state.screen = "victory";
+    }
+  } else {
+    state.screen = cinematic.nextScreen;
+  }
+  
   state.lastFx = cinematic.nextScreen === "victory" ? "reward" : "none";
+}
+
+export function startNextChapter(state: GameState) {
+  if (state.chapter >= 3) {
+    state.screen = "victory";
+    return;
+  }
+  
+  state.chapter = (state.chapter + 1) as Chapter;
+  state.floor = 0;
+  state.mapNodes = generateRouteMap(state);
+  state.availableNodeIds = state.mapNodes.filter((node) => node.row === 0).map((node) => node.id);
+  state.currentNodeId = null;
+  state.visitedNodeIds = [];
+  state.reward = null;
+  
+  const chapterConfig = CHAPTER_CONFIG[state.chapter];
+  addLog(state, `--- ${chapterConfig.name} ---`);
+  addLog(state, chapterConfig.subtitle);
+  addLog(state, "夜路继续延伸，雾气更浓了。");
+  
+  state.screen = "map";
+  state.lastFx = "reward";
 }
 
 function randomCardChoices(state: GameState, count: number) {

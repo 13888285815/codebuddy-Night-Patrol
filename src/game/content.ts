@@ -1,4 +1,45 @@
-import type { CardDef, EnemyTemplate, EventDef, NodeType, RelicDef } from "./types";
+import type { CardDef, Chapter, EnemyTemplate, EventDef, NodeType, RelicDef } from "./types";
+
+export const CHAPTER_CONFIG: Record<
+  Chapter,
+  {
+    name: string;
+    subtitle: string;
+    background: string;
+    normalEnemies: string[];
+    eliteEnemies: string[];
+    bossId: string;
+    nodeRows: number;
+  }
+> = {
+  1: {
+    name: "荒庙篇",
+    subtitle: "山雾不散，破庙钟声隐约可闻",
+    background: "night-temple",
+    normalEnemies: ["lantern", "waterghost", "templecorpse"],
+    eliteEnemies: ["macaque", "warlock", "foxshade"],
+    bossId: "tigerlord",
+    nodeRows: 8,
+  },
+  2: {
+    name: "阴市篇",
+    subtitle: "鬼火引路，灯笼在水面漂成星河",
+    background: "ghost-market",
+    normalEnemies: ["willow", "paperdoll", "incense"],
+    eliteEnemies: ["butcher", "puppet"],
+    bossId: "riverlord",
+    nodeRows: 8,
+  },
+  3: {
+    name: "冥府篇",
+    subtitle: "黄泉路远，奈何桥头风卷纸钱",
+    background: "underworld",
+    normalEnemies: ["ghostsoldier", "soulfire", "boneguard"],
+    eliteEnemies: ["judge", "reaper"],
+    bossId: "yama",
+    nodeRows: 8,
+  },
+};
 
 export const CARD_DEFS: Record<string, CardDef> = {
   strike: {
@@ -305,6 +346,146 @@ export const ENEMIES: Record<string, EnemyTemplate> = {
       { type: "attack", amount: 6, hits: 3, label: "裂骨三扑" },
       { type: "buff", amount: 3, label: "百兽伏首" },
       { type: "blockAttack", amount: 10, block: 12, label: "盘踞古庙" },
+    ],
+  },
+  willow: {
+    id: "willow",
+    name: "垂柳精",
+    artKey: "willow",
+    hp: 56,
+    moves: [
+      { type: "attack", amount: 7, label: "柳枝抽击" },
+      { type: "debuff", amount: 2, label: "缠足" },
+      { type: "attack", amount: 5, hits: 2, label: "乱枝" },
+    ],
+  },
+  paperdoll: {
+    id: "paperdoll",
+    name: "纸人",
+    artKey: "paperdoll",
+    hp: 44,
+    moves: [
+      { type: "attack", amount: 6, label: "纸刃" },
+      { type: "curse", amount: 1, label: "替身纸" },
+      { type: "block", amount: 8, label: "折纸盾" },
+    ],
+  },
+  incense: {
+    id: "incense",
+    name: "香童",
+    artKey: "incense",
+    hp: 52,
+    moves: [
+      { type: "attack", amount: 8, label: "香火烫" },
+      { type: "buff", amount: 2, label: "添香" },
+      { type: "attack", amount: 6, hits: 2, label: "双香" },
+    ],
+  },
+  butcher: {
+    id: "butcher",
+    name: "鬼屠夫",
+    artKey: "butcher",
+    hp: 78,
+    elite: true,
+    moves: [
+      { type: "attack", amount: 14, label: "剁骨刀" },
+      { type: "debuff", amount: 3, label: "放血" },
+      { type: "attack", amount: 20, label: "开膛" },
+    ],
+  },
+  puppet: {
+    id: "puppet",
+    name: "提线傀儡",
+    artKey: "puppet",
+    hp: 74,
+    elite: true,
+    moves: [
+      { type: "attack", amount: 10, label: "丝线缠" },
+      { type: "block", amount: 14, label: "木盾" },
+      { type: "attack", amount: 8, hits: 3, label: "乱舞" },
+    ],
+  },
+  riverlord: {
+    id: "riverlord",
+    name: "河伯",
+    artKey: "riverlord",
+    hp: 142,
+    boss: true,
+    moves: [
+      { type: "attack", amount: 18, label: "浪涛拍岸" },
+      { type: "debuff", amount: 3, label: "溺水" },
+      { type: "attack", amount: 8, hits: 3, label: "漩涡" },
+      { type: "blockAttack", amount: 14, block: 15, label: "水盾" },
+    ],
+  },
+  ghostsoldier: {
+    id: "ghostsoldier",
+    name: "阴兵",
+    artKey: "ghostsoldier",
+    hp: 62,
+    moves: [
+      { type: "attack", amount: 10, label: "长枪突刺" },
+      { type: "block", amount: 9, label: "盾阵" },
+      { type: "buff", amount: 2, label: "战魂" },
+    ],
+  },
+  soulfire: {
+    id: "soulfire",
+    name: "鬼火",
+    artKey: "soulfire",
+    hp: 48,
+    moves: [
+      { type: "attack", amount: 9, label: "幽火" },
+      { type: "curse", amount: 1, label: "噬魂" },
+      { type: "attack", amount: 7, hits: 2, label: "鬼火燎原" },
+    ],
+  },
+  boneguard: {
+    id: "boneguard",
+    name: "白骨守卫",
+    artKey: "boneguard",
+    hp: 66,
+    moves: [
+      { type: "attack", amount: 11, label: "骨刃" },
+      { type: "block", amount: 12, label: "骨盾" },
+      { type: "attack", amount: 5, hits: 4, label: "碎骨" },
+    ],
+  },
+  judge: {
+    id: "judge",
+    name: "判官",
+    artKey: "judge",
+    hp: 86,
+    elite: true,
+    moves: [
+      { type: "attack", amount: 15, label: "朱笔点魂" },
+      { type: "debuff", amount: 4, label: "定罪" },
+      { type: "attack", amount: 22, label: "勾魂" },
+    ],
+  },
+  reaper: {
+    id: "reaper",
+    name: "无常",
+    artKey: "reaper",
+    hp: 82,
+    elite: true,
+    moves: [
+      { type: "attack", amount: 12, label: "锁链" },
+      { type: "debuff", amount: 2, label: "勾命" },
+      { type: "attack", amount: 18, label: "索命" },
+    ],
+  },
+  yama: {
+    id: "yama",
+    name: "阎罗王",
+    artKey: "yama",
+    hp: 168,
+    boss: true,
+    moves: [
+      { type: "attack", amount: 20, label: "阎罗怒" },
+      { type: "buff", amount: 4, label: "审判" },
+      { type: "attack", amount: 12, hits: 3, label: "三刀问罪" },
+      { type: "blockAttack", amount: 16, block: 18, label: "阴曹护佑" },
     ],
   },
 };

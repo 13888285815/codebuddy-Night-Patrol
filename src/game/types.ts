@@ -12,12 +12,14 @@ export type Screen =
   | "remove"
   | "upgrade"
   | "gameover"
-  | "victory";
+  | "victory"
+  | "chapter";
 
 export type CardType = "attack" | "skill" | "power" | "status";
 export type Rarity = "basic" | "common" | "uncommon" | "rare" | "special" | "status";
 export type NodeType = "combat" | "elite" | "event" | "rest" | "shop" | "boss";
 export type Difficulty = "story" | "normal" | "hard";
+export type Chapter = 1 | 2 | 3;
 
 export interface MapNode {
   id: string;
@@ -173,6 +175,7 @@ export interface GameState {
   difficulty: Difficulty;
   player: PlayerState | null;
   floor: number;
+  chapter: Chapter;
   mapNodes: MapNode[];
   availableNodeIds: string[];
   currentNodeId: string | null;
